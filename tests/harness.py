@@ -21,7 +21,10 @@ import yaml
 from nudge.lexicon import Lexicon
 from nudge.resolver import Resolver
 
-STALLS = Path(__file__).parent / "stalls" / "stalls.yaml"
+STALL_SETS = {
+    "synthetic": Path(__file__).parent / "stalls" / "stalls.yaml",
+    "real": Path(__file__).parent / "stalls" / "real.yaml",
+}
 
 
 class EchoBackend:
@@ -55,6 +58,8 @@ def main() -> int:
     ap.add_argument("--threads", type=int, default=None)
     ap.add_argument("--only", help="comma-separated stall ids or types to run")
     ap.add_argument("--no-hints", action="store_true", help="disable sound-alike hints")
+    ap.add_argument("--set", default="synthetic", choices=list(STALL_SETS),
+                    help="synthetic (made up) or real (from Dad's recordings)")
     ap.add_argument("--verbose", "-v", action="store_true")
     ap.add_argument("--json", help="write per-stall results to this file")
     args = ap.parse_args()
@@ -71,7 +76,11 @@ def main() -> int:
 
     lex = Lexicon(args.lexicon)
     resolver = Resolver(backend, lex, sound_hints=not args.no_hints)
-    stalls = yaml.safe_load(STALLS.read_text())
+    src = STALL_SETS[args.set]
+    if not src.exists():
+        print(f"no {args.set} stall set yet ({src})", file=sys.stderr)
+        return 2
+    stalls = yaml.safe_load(src.read_text()) or []
     if args.only:
         keys = set(args.only.split(","))
         stalls = [s for s in stalls if s["id"] in keys or s["type"] in keys]

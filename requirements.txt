@@ -7,3 +7,5 @@ evdev>=1.7 ; sys_platform == "linux"
 bleak>=0.22
 pronouncing>=0.2
 wordfreq>=3.1
+faster-whisper>=1.0 ; extra == "ingest"
+pyannote.audio>=3.1 ; extra == "ingest"
