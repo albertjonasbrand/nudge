@@ -12,6 +12,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Protocol
 
+from . import phono
 from . import prompt as P
 from .lexicon import Lexicon
 
@@ -34,10 +35,12 @@ class Result:
 
 
 class Resolver:
-    def __init__(self, backend: Backend, lexicon: Lexicon | None = None, candidates: int = 3):
+    def __init__(self, backend: Backend, lexicon: Lexicon | None = None, candidates: int = 3,
+                 sound_hints: bool = True):
         self.backend = backend
         self.lexicon = lexicon or Lexicon()
         self.candidates = candidates
+        self.sound_hints = sound_hints
         self._lex_text = self.lexicon.as_prompt_text()
 
     def refresh_lexicon(self) -> None:
@@ -45,7 +48,8 @@ class Resolver:
         self._lex_text = self.lexicon.as_prompt_text()
 
     def resolve(self, context: str, tail: str, exclude: list[str] | None = None) -> Result:
-        system, user = P.build(context, tail, self._lex_text)
+        hints = phono.hints_for(tail) if self.sound_hints else ""
+        system, user = P.build(context, tail, self._lex_text, hints)
         if exclude:
             user = user.replace("\nAnswer:", "\nNot these, he rejected them: " + ", ".join(exclude) + "\n\nAnswer:")
         t0 = time.perf_counter()

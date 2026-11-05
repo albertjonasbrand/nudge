@@ -54,6 +54,7 @@ def main() -> int:
     ap.add_argument("--n-gpu-layers", type=int, default=-1)
     ap.add_argument("--threads", type=int, default=None)
     ap.add_argument("--only", help="comma-separated stall ids or types to run")
+    ap.add_argument("--no-hints", action="store_true", help="disable sound-alike hints")
     ap.add_argument("--verbose", "-v", action="store_true")
     ap.add_argument("--json", help="write per-stall results to this file")
     args = ap.parse_args()
@@ -69,7 +70,7 @@ def main() -> int:
         backend = LlamaBackend(args.model, n_gpu_layers=args.n_gpu_layers, n_threads=args.threads)
 
     lex = Lexicon(args.lexicon)
-    resolver = Resolver(backend, lex)
+    resolver = Resolver(backend, lex, sound_hints=not args.no_hints)
     stalls = yaml.safe_load(STALLS.read_text())
     if args.only:
         keys = set(args.only.split(","))

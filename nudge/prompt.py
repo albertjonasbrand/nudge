@@ -65,18 +65,26 @@ USER = """Conversation so far:
 
 He said right before pressing the button:
 "{tail}"
-
+{hints}
 Answer:"""
 
+HINTS = """
+Words that SOUND LIKE what he said (if he swapped a sound, the real word is probably here):
+{lines}
+"""
 
-def build(context: str, tail: str, lexicon_text: str) -> tuple[str, str]:
+
+def build(context: str, tail: str, lexicon_text: str, hints: str = "") -> tuple[str, str]:
     """Return (system, user) strings for the chat call.
 
     The lexicon rides in the system prompt so it sits in the warm prefix cache
-    and costs nothing at click time.
+    and costs nothing at click time. Sound-alike hints are per-click and ride
+    in the user turn.
     """
     system = SYSTEM
     if lexicon_text:
         system += LEXICON_HEADER + lexicon_text
-    user = USER.format(context=context.strip() or "(nothing yet)", tail=tail.strip() or "(silence)")
+    user = USER.format(context=context.strip() or "(nothing yet)",
+                       tail=tail.strip() or "(silence)",
+                       hints=HINTS.format(lines=hints) if hints else "")
     return system, user
