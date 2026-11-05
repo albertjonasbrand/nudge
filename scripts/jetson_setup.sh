@@ -84,8 +84,9 @@ for f in en_US-lessac-medium.onnx en_US-lessac-medium.onnx.json; do
   [ -f "piper/$f" ] || curl -sL -o "piper/$f" \
     "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/$f"
 done
-sed -i "s#^  path: .*#  path: models/$GGUF#" "$ROOT/config/settings.yaml"
-sed -i "s#^  model: .*\.en.*#  model: $WHISPER#" "$ROOT/config/settings.yaml"
+# only the model: block's path and the whisper: block's model line
+sed -i "/^model:/,/^$/ s#^  path: .*#  path: models/$GGUF#" "$ROOT/config/settings.yaml"
+sed -i "/^whisper:/,/^$/ s#^  model: .*#  model: $WHISPER#" "$ROOT/config/settings.yaml"
 
 say "permissions (mic, evdev button, no sudo needed at runtime)"
 sudo usermod -aG audio,input "$USER" || true
