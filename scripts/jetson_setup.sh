@@ -35,6 +35,11 @@ sudo apt-get install -y -qq git build-essential cmake python3-pip python3-venv p
   libevdev-dev curl jq >/dev/null
 
 say "python deps"
+# Ubuntu 22.04 ships pip 22, which can't build modern scikit-build-core packages
+# (llama-cpp-python). Upgrade pip in the user site first and use it from here on.
+python3 -m pip install --user -q -U pip setuptools wheel packaging
+export PATH="$HOME/.local/bin:$PATH"
+pip3() { python3 -m pip "$@"; }
 pip3 install --user -q -r "$ROOT/requirements.txt"
 # llama-cpp-python with CUDA: build from source against the Jetson's CUDA
 if ! python3 -c "import llama_cpp, sys; sys.exit(0 if llama_cpp.llama_supports_gpu_offload() else 1)" 2>/dev/null; then
@@ -71,7 +76,7 @@ mkdir -p "$ROOT/models/piper" && cd "$ROOT/models"
   "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-${WHISPER}.bin"
 case "$MODEL" in
   qwen2.5-3b) GGUF=qwen2.5-3b-instruct-q4_k_m.gguf; URL="https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main/$GGUF" ;;
-  qwen2.5-7b) GGUF=qwen2.5-7b-instruct-q4_k_m.gguf; URL="https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF/resolve/main/$GGUF" ;;
+  qwen2.5-7b) GGUF=qwen2.5-7b-instruct-q4_k_m.gguf; URL="https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q4_K_M.gguf" ;;  # Qwen's own repo splits this one
   *) echo "unknown MODEL=$MODEL" >&2; exit 1 ;;
 esac
 [ -f "$GGUF" ] || curl -sL -o "$GGUF" "$URL"
