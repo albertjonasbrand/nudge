@@ -60,15 +60,13 @@ fi
 sudo ln -sf "$ROOT/third_party/whisper.cpp/build/bin/whisper-stream" /usr/local/bin/whisper-stream
 
 say "piper tts"
-if ! command -v piper >/dev/null; then
-  pip3 install --user -q piper-tts || true
-  if ! command -v piper >/dev/null; then
-    # fall back to the static binary
-    cd "$ROOT/third_party"
-    curl -sL https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_aarch64.tar.gz | tar xz
-    sudo ln -sf "$ROOT/third_party/piper/piper" /usr/local/bin/piper
-  fi
+# The pip piper-tts wheel crashes on Jetson (onnxruntime assertion on aarch64); use the static binary.
+pip3 uninstall -y -q piper-tts 2>/dev/null || true
+if [ ! -x "$ROOT/third_party/piper/piper" ]; then
+  cd "$ROOT/third_party"
+  curl -sL https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_aarch64.tar.gz | tar xz
 fi
+sudo ln -sf "$ROOT/third_party/piper/piper" /usr/local/bin/piper
 
 say "models"
 mkdir -p "$ROOT/models/piper" && cd "$ROOT/models"

@@ -2,7 +2,7 @@ llama-cpp-python>=0.3
 sounddevice>=0.5
 numpy>=1.26
 pyyaml>=6
-piper-tts>=1.2 ; platform_machine == "aarch64"
+# piper: static binary from rhasspy releases (jetson_setup.sh); the pip wheel crashes on Jetson
 evdev>=1.7 ; sys_platform == "linux"
 bleak>=0.22
 pronouncing>=0.2
