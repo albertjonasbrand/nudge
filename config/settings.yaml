@@ -1,0 +1,30 @@
+model:
+  path: models/qwen2.5-3b-instruct-q4_k_m.gguf
+  n_ctx: 4096
+  n_gpu_layers: -1          # all layers on GPU on the Jetson; ignored on CPU
+  n_threads: 6
+  candidates: 3
+  max_tokens: 24
+  temperature: 0.2
+
+whisper:
+  model: small.en
+  chunk_seconds: 1.0
+  language: en
+
+ring:
+  seconds: 60
+  tail_seconds: 6           # the speaker's "last few seconds" sent as the stall
+
+tts:
+  voice: en_US-lessac-medium
+  gap_ms: 350               # pause between the three words
+
+button:
+  gpio_pin: 17
+  ble_name: "Flic"
+  double_click_ms: 400
+
+log:
+  enabled: false
+  path: logs/stalls.csv

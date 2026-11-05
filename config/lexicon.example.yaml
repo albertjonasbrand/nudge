@@ -1,0 +1,18 @@
+# Copy to config/lexicon.yaml and fill in. This file is private to the device.
+# Every entry is a word or short name the speaker is likely to reach for.
+# The "note" is shown to the model so it can match "my daughter's kid" to a name.
+
+people:
+  - { word: "Albert", note: "son" }
+  - { word: "Eliana", note: "granddaughter, wrestles and dances" }
+
+places:
+  - { word: "Kasson", note: "town where Albert's office is" }
+  - { word: "Mayo", note: "the clinic" }
+
+life:
+  - { word: "truck", note: "" }
+  - { word: "garage", note: "" }
+
+# Words he confirmed after a nudge are appended here automatically with a timestamp.
+confirmed: []

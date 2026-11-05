@@ -1,0 +1,328 @@
+# Simulated stalls for the harness. Each has:
+#   type:    anomic | sound | semantic | circumlocution | lexicon
+#   context: the last minute of conversation as speech-to-text would render it
+#   tail:    what he said just before the click (included in context in real use)
+#   target:  the intended word; accept lists alternates that count as a hit
+# Replace these with real stalls from Dad as they're captured.
+
+- id: a01
+  type: anomic
+  context: "we took the kids out saturday, the little ones wanted to see the animals, we were there most of the day, the"
+  tail: "we were there most of the day, the, uh, the"
+  target: zoo
+  accept: [zoo, farm]
+
+- id: a02
+  type: anomic
+  context: "I need to run to town later. we're out of milk and bread and I want to grab something for dinner at the"
+  tail: "something for dinner at the, uh"
+  target: store
+  accept: [store, grocery, market, hy-vee]
+
+- id: a03
+  type: anomic
+  context: "it's cold in here. can you go turn up the, the thing on the wall, the"
+  tail: "the thing on the wall, the"
+  target: thermostat
+  accept: [thermostat, heat, furnace]
+
+- id: a04
+  type: anomic
+  context: "my knee's been bothering me again. I think I'm going to call and set up another visit with the"
+  tail: "set up another visit with the, uh, the"
+  target: doctor
+  accept: [doctor, clinic, mayo]
+
+- id: a05
+  type: anomic
+  context: "pass me that, I need to tighten this bolt, hand me the"
+  tail: "hand me the, the"
+  target: wrench
+  accept: [wrench, socket, ratchet]
+
+- id: a06
+  type: anomic
+  context: "we're going to drive down and see your sister next month. it's a long way, we'll take the"
+  tail: "it's a long way, we'll take the"
+  target: truck
+  accept: [truck, car, highway, interstate]
+
+- id: a07
+  type: anomic
+  context: "I was watching the game last night, the vikings, they lost in the last minute, the kicker missed the"
+  tail: "the kicker missed the, the"
+  target: field goal
+  accept: [field goal, kick, goal]
+
+- id: a08
+  type: anomic
+  context: "grab me a cup of, I just want something hot, cup of"
+  tail: "something hot, cup of"
+  target: coffee
+  accept: [coffee, tea, cocoa]
+
+- id: a09
+  type: anomic
+  context: "it's raining pretty good out there. if you're going out take the, take an"
+  tail: "take the, take an"
+  target: umbrella
+  accept: [umbrella, jacket, coat]
+
+- id: a10
+  type: anomic
+  context: "I was up on the roof cleaning out the gutters and I about fell off the"
+  tail: "about fell off the"
+  target: ladder
+  accept: [ladder, roof]
+
+- id: a11
+  type: anomic
+  context: "what time is it, I have to take my pills with food. did you take the chicken out this morning, it's still in the"
+  tail: "it's still in the, uh"
+  target: freezer
+  accept: [freezer, fridge, refrigerator]
+
+- id: a12
+  type: anomic
+  context: "she's got a dance thing this weekend and then wrestling practice on tuesday. that girl never stops. she's going to be at the"
+  tail: "she's going to be at the"
+  target: gym
+  accept: [gym, studio, kratos, practice]
+
+- id: s01
+  type: sound
+  context: "my hands are freezing. can you cold my hand for a minute"
+  tail: "can you cold my hand for a minute"
+  target: hold
+  accept: [hold, warm]
+
+- id: s02
+  type: sound
+  context: "I'm hungry, let's eat. pass me a pork so I can eat this salad"
+  tail: "pass me a pork so I can eat this salad"
+  target: fork
+  accept: [fork]
+
+- id: s03
+  type: sound
+  context: "the bat got out again, it was up on the fence meowing all night"
+  tail: "it was up on the fence meowing all night"
+  target: cat
+  accept: [cat]
+
+- id: s04
+  type: sound
+  context: "I'll grab my goat, it's chilly out there"
+  tail: "I'll grab my goat"
+  target: coat
+  accept: [coat, jacket]
+
+- id: s05
+  type: sound
+  context: "hand me the tone, I want to call your mother"
+  tail: "hand me the tone"
+  target: phone
+  accept: [phone]
+
+- id: s06
+  type: sound
+  context: "the lawn needs doing. I'll get the mower out of the barage"
+  tail: "I'll get the mower out of the barage"
+  target: garage
+  accept: [garage, shed]
+
+- id: s07
+  type: sound
+  context: "I want to sit down. where's the stair, the stair"
+  tail: "where's the stair, the stair"
+  target: chair
+  accept: [chair]
+
+- id: s08
+  type: sound
+  context: "it's bedtime. I'm going to go lay down on the ped"
+  tail: "lay down on the ped"
+  target: bed
+  accept: [bed]
+
+- id: s09
+  type: sound
+  context: "I'll meet you at the car, let me find my teas, my teas"
+  tail: "let me find my teas, my teas"
+  target: keys
+  accept: [keys]
+
+- id: s10
+  type: sound
+  context: "the dog wants out, open the boor for him"
+  tail: "open the boor for him"
+  target: door
+  accept: [door]
+
+- id: m01
+  type: semantic
+  context: "let's have soup tonight. get a spoon, no, not a spoon, get a, I need a"
+  tail: "not a spoon, get a, I need a"
+  target: bowl
+  accept: [bowl, ladle]
+
+- id: m02
+  type: semantic
+  context: "can you let the dog out, no, not the dog, the other one, the one that meows"
+  tail: "not the dog, the other one, the one that meows"
+  target: cat
+  accept: [cat, kitty]
+
+- id: m03
+  type: semantic
+  context: "the appointment is on tuesday, no, not tuesday, the day after, it's"
+  tail: "not tuesday, the day after, it's"
+  target: wednesday
+  accept: [wednesday]
+
+- id: m04
+  type: semantic
+  context: "I'm going to make eggs. hand me the pan, no the, the one with the, the thing you flip them with"
+  tail: "the one with the, the thing you flip them with"
+  target: spatula
+  accept: [spatula, flipper, turner]
+
+- id: m05
+  type: semantic
+  context: "my brother called, no not my brother, your mother's brother, your"
+  tail: "your mother's brother, your"
+  target: uncle
+  accept: [uncle]
+
+- id: m06
+  type: semantic
+  context: "put it in the oven, no, the small one on the counter, the, the"
+  tail: "the small one on the counter, the, the"
+  target: microwave
+  accept: [microwave, toaster]
+
+- id: m07
+  type: semantic
+  context: "the mail's here, give me the, not the knife, the thing for the envelopes"
+  tail: "not the knife, the thing for the envelopes"
+  target: opener
+  accept: [opener, letter opener, scissors]
+
+- id: m08
+  type: semantic
+  context: "turn on the radio, no, I mean the, the one with the picture"
+  tail: "the one with the picture"
+  target: tv
+  accept: [tv, television]
+
+- id: m09
+  type: semantic
+  context: "we're out of bread, well not bread, the round ones for breakfast, the"
+  tail: "the round ones for breakfast, the"
+  target: bagels
+  accept: [bagels, bagel, english muffins, muffins, donuts]
+
+- id: m10
+  type: semantic
+  context: "I'll be in the garden, I need to water the, not the flowers, the ones we eat"
+  tail: "not the flowers, the ones we eat"
+  target: vegetables
+  accept: [vegetables, tomatoes, garden]
+
+- id: c01
+  type: circumlocution
+  context: "where's the, the thing, you cut the grass with it, the"
+  tail: "you cut the grass with it, the"
+  target: mower
+  accept: [mower, lawnmower, lawn mower]
+
+- id: c02
+  type: circumlocution
+  context: "I need the, you know, the thing you use for the, for your teeth, in the morning"
+  tail: "for your teeth, in the morning"
+  target: toothbrush
+  accept: [toothbrush, toothpaste]
+
+- id: c03
+  type: circumlocution
+  context: "put it on the, the thing in the kitchen, the flat thing you eat at"
+  tail: "the flat thing you eat at"
+  target: table
+  accept: [table, counter]
+
+- id: c04
+  type: circumlocution
+  context: "I saw one of those, the big trucks with the ladder, with the siren, there was a"
+  tail: "the big trucks with the ladder, with the siren"
+  target: fire truck
+  accept: [fire truck, firetruck, fire engine]
+
+- id: c05
+  type: circumlocution
+  context: "my eyes are bad today, where are my, the things, for seeing, my"
+  tail: "the things, for seeing, my"
+  target: glasses
+  accept: [glasses, readers]
+
+- id: c06
+  type: circumlocution
+  context: "it's the place where you put the money, the building, we need to go to the"
+  tail: "the place where you put the money, the building"
+  target: bank
+  accept: [bank]
+
+- id: c07
+  type: circumlocution
+  context: "she plays the, the thing with the strings, you sit down and the keys, she's good at it"
+  tail: "the thing with the strings, you sit down and the keys"
+  target: piano
+  accept: [piano]
+
+- id: c08
+  type: circumlocution
+  context: "we need more of that, the white stuff, you put it on, for the eggs, in the shaker"
+  tail: "the white stuff, you put it on, for the eggs, in the shaker"
+  target: salt
+  accept: [salt, pepper]
+
+- id: c09
+  type: circumlocution
+  context: "it's that, the one that comes in the morning, with the letters, he drives the little truck"
+  tail: "with the letters, he drives the little truck"
+  target: mailman
+  accept: [mailman, mail, mail carrier, postman]
+
+- id: c10
+  type: circumlocution
+  context: "he's the one who fixes the pipes under the sink, I need to call the"
+  tail: "fixes the pipes under the sink, I need to call the"
+  target: plumber
+  accept: [plumber]
+
+- id: l01
+  type: lexicon
+  context: "I talked to, you know, your girl, the one that wrestles, I talked to"
+  tail: "your girl, the one that wrestles, I talked to"
+  target: Eliana
+  accept: [eliana]
+
+- id: l02
+  type: lexicon
+  context: "I've got the appointment at the, the big clinic in rochester, at"
+  tail: "the big clinic in rochester, at"
+  target: Mayo
+  accept: [mayo]
+
+- id: l03
+  type: lexicon
+  context: "I'm driving over to see my son at his office in, in, the town over, in"
+  tail: "at his office in, in, the town over, in"
+  target: Kasson
+  accept: [kasson]
+
+- id: l04
+  type: lexicon
+  context: "my boy came by, he brought the grandkids, my boy, uh"
+  tail: "my boy came by, my boy, uh"
+  target: Albert
+  accept: [albert]
