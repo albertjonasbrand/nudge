@@ -7,13 +7,13 @@
 # Idempotent: re-running skips what's done. Roughly 45–60 min the first time,
 # almost all of it compiling llama.cpp and whisper.cpp for CUDA.
 #
-# Env overrides:  MODEL=qwen2.5-7b   (default qwen2.5-3b, also: qwen2.5-7b)
+# Env overrides:  MODEL=qwen2.5-3b   (default qwen2.5-7b, also: qwen2.5-3b)
 #                 WHISPER=medium.en  (default small.en)
 #                 NO_SERVICE=1       (don't install the systemd units)
 
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-MODEL="${MODEL:-qwen2.5-3b}"
+MODEL="${MODEL:-qwen2.5-7b}"
 WHISPER="${WHISPER:-small.en}"
 JOBS="$(nproc)"
 export PATH="/usr/local/cuda/bin:$PATH"

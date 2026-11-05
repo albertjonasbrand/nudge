@@ -1,5 +1,5 @@
 model:
-  path: models/qwen2.5-3b-instruct-q4_k_m.gguf   # jetson_setup.sh swaps in the 7B/8B if it fits
+  path: models/qwen2.5-7b-instruct-q4_k_m.gguf   # 96% top-3, 0.9 s on the Orin NX GPU; 3B is 61%, 0.5 s
   n_ctx: 4096
   n_gpu_layers: -1          # all layers on GPU on the Jetson; ignored on CPU
   n_threads: 6
