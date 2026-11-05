@@ -1,55 +1,113 @@
 # Nudge
 
-An offline, pocket-size word-finding aid for people with post-stroke aphasia.
+An offline, handheld word-finding aid for people with post-stroke aphasia.
 
-Nudge listens to the conversation on-device. When the speaker stalls on a word and clicks
-a button, it shows and whispers the three most likely words they meant, in about one second,
-with no internet. They pick one and say it themselves.
+![Nudge](docs/renders/nudge-hero.jpg)
 
-Built for one person first. Design spec lives in the Claude project; the short version:
+Nudge listens to the conversation on-device. When the speaker stalls on a word and presses
+the button, it shows and says the three words they most likely meant, in about a second,
+with no internet. They say the word themselves. Nothing leaves the device.
 
 - **Recognition over retrieval.** Anomia is a retrieval problem. Three candidates, best first.
-- **He says the word.** The device never speaks into the conversation on his behalf.
+- **They say the word.** The device never speaks into the conversation on their behalf.
 - **One second.** A smarter answer at three seconds loses the conversation.
-- **His world.** A personal lexicon (names, places, meds, hobbies) rides in the prompt.
+- **Their world.** A personal lexicon (names, places, meds, hobbies) rides in every prompt.
 - **Nothing leaves the box.** Audio is transcribed in RAM and discarded. No network needed.
 
-## Hardware (v1)
+## Status (Nov 5, 2026)
 
-- NVIDIA Jetson Orin NX 16GB in a Seeed reComputer Mini J4012
-- Clip-on lav mic + USB audio adapter, wired mono earbud
-- Pocket BLE clicker (Flic 2 or camera shutter) + one button on the box
-- 3.5" screen as fallback view
-- USB-C PD power bank → XT30
+Software is complete for v1 and tested as far as it can be without the hardware. The first
+unit's compute module arrives today.
 
-## Software
-
-```
-mic → whisper.cpp (streaming) → 60 s text ring buffer → llama.cpp (warm prefix cache)
-                                                             ↓ on click
-                                                   3 words → Piper TTS → earbud
-                                                           → screen
-```
-
-| Module | Does |
+| Piece | State |
 | --- | --- |
-| `nudge/listener.py` | Streams mic audio through whisper.cpp into the ring buffer |
-| `nudge/ring.py` | 60 s rolling transcript, RAM only |
-| `nudge/resolver.py` | Builds the aphasia prompt, calls the LLM, parses three words |
-| `nudge/lexicon.py` | Loads the personal lexicon and confirmed-word boosts |
-| `nudge/speak.py` | Piper TTS to the earbud |
-| `nudge/button.py` | BLE clicker and GPIO button events |
-| `nudge/service.py` | The loop that ties it together |
-| `tests/harness.py` | Scores top-1 / top-3 hit rate on a stall test set |
+| Aphasia prompt + resolver + prefix cache | done, tested on CPU |
+| Sound-alike engine (CMUdict + wordfreq, gated) | done; sound swaps 50% → 70% |
+| Personal lexicon + confirmed-word boosting | done |
+| 60 s ring buffer | done |
+| Stall test harness, 46 synthetic cases | done; best 63% top-3 on Qwen2.5-3B Q4 |
+| Service loop, button events, empty-tail guard | done, smoke-tested in `--dev` |
+| Touchscreen kiosk UI + family page + stall log | done |
+| whisper-stream listener, Piper speaker | written; needs the Jetson to test |
+| XIAO RP2040 button firmware | written; needs the board to flash |
+| Jetson setup script + systemd units | written; runs on first boot |
+| Recording ingest → real stall set | written; needs a recording |
 
-## Development
+Accuracy so far, CPU, 46 synthetic stalls, top-3:
 
-The resolver and test harness run on any machine with `llama-cpp-python` and a GGUF model;
-the full service needs the Jetson (CUDA builds of whisper.cpp and llama.cpp).
+| Config | ALL | anomic | sound | semantic | circumlocution |
+| --- | --- | --- | --- | --- | --- |
+| Qwen2.5 1.5B, naive prompt | 11% | | | | |
+| Qwen2.5 1.5B, aphasia prompt | 35% | | | | |
+| Qwen2.5 3B, aphasia prompt | 59% | 58% | 50% | 50% | 80% |
+| Qwen2.5 3B + hints everywhere | 41% | 42% | 50% | 40% | 50% |
+| **Qwen2.5 3B + gated hints** | **63%** | 67% | 70% | 50% | 70% |
+
+Gate to the field unit: 80% top-3 on real stalls, under 1.5 s. The 7B/8B on the Jetson GPU is the next lever.
+
+## Hardware (v1 handheld)
+
+One sealed unit, ~100 × 160 × 48 mm, USB-C charged. Jetson Orin NX 16GB (Seeed reComputer Mini J4012),
+5" 800×480 touch panel via USB-C→HDMI, 40 mm speaker + PAM8403, electret mic via USB codec, 30 mm arcade
+button through a XIAO RP2040 (USB HID), 4× 21700 cells (4S) with an IP2368 USB-C charger board.
+Full BOM and exploded view in `docs/`.
+
+## Layout
+
+```
+nudge/
+  prompt.py      the aphasia prompt
+  resolver.py    backend + three-word parser + said-word filter
+  phono.py       sound-alike hints (gated on a finished phrase)
+  lexicon.py     his world, plus confirmed words
+  ring.py        60 s rolling transcript, RAM only
+  listener.py    whisper-stream → ring (TypedListener for dev)
+  speak.py       Piper → speaker (PrintSpeaker for dev)
+  button.py      evdev reader for the XIAO; Button.fire() event bus
+  screen.py      HTTP + SSE server for the kiosk page and the family page
+  static/        index.html (kiosk), family.html (lexicon editor, log)
+  log.py         opt-in CSV stall log
+  service.py     the loop
+tests/harness.py            scores top-1/top-3 on tests/stalls/{stalls,real}.yaml
+tools/ingest_recording.py   recording → transcript → suspected stalls → review YAML → real.yaml
+firmware/xiao_button/       Arduino sketch: F13/F14/F15 on click/double/long
+scripts/jetson_setup.sh     one-shot CUDA builds, models, systemd, kiosk
+```
+
+## Run
+
+On the Jetson (JetPack 6):
+
+```
+git clone https://github.com/albertjonasbrand/nudge ~/nudge && cd ~/nudge
+./scripts/jetson_setup.sh                     # ~1 h first time; MODEL=qwen2.5-7b for the bigger model
+python3 -m tests.harness --model models/qwen2.5-3b-instruct-q4_k_m.gguf
+sudo systemctl start nudge nudge-kiosk
+```
+
+Anywhere, no hardware:
 
 ```
 pip install -r requirements.txt
-python -m tests.harness --model models/qwen2.5-3b-instruct-q4_k_m.gguf
+python3 -m tests.harness --model models/<any>.gguf
+python3 -m nudge.service --dev                # type lines; blank line = press
 ```
 
-`scripts/jetson_setup.sh` builds the CUDA stack on JetPack 6.
+From a recording of the user:
+
+```
+pip install faster-whisper pyannote.audio
+python3 tools/ingest_recording.py call.m4a --diarize --dad first
+# fill in target words in tests/stalls/review/call.yaml, then
+python3 tools/ingest_recording.py --merge tests/stalls/review/call.yaml
+python3 -m tests.harness --set real --model models/<any>.gguf
+```
+
+## Morning checklist
+
+1. Unbox the Jetson. Connect a monitor (Anker USB-C→HDMI), keyboard, Wi-Fi.
+2. Clone the repo and run `scripts/jetson_setup.sh`.
+3. Run the harness on the GPU with the 3B, then `MODEL=qwen2.5-7b` and compare.
+4. Plug in the Sabrent adapter + mic + speaker; `python3 -m nudge.service` and talk to it.
+5. Flash the XIAO, wire the button, press it.
+6. Record a call with Dad; ingest; tune on real stalls.
