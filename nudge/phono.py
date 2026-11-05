@@ -124,7 +124,7 @@ def sound_alikes(word: str, n: int = 6) -> list[str]:
     return out
 
 
-def hints_for(tail: str, per_word: int = 8, max_words: int = 6) -> str:
+def hints_for(tail: str, per_word: int = 8, max_words: int = 3) -> str:
     """One line per content word in the tail: 'goat: coat, boat, vote, note, wrote'."""
     words = [w for w in _WORD.findall(tail.lower()) if w not in STOP and len(w) >= 3]
     seen: list[str] = []
