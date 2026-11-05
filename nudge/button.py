@@ -44,7 +44,7 @@ KEYMAP = {"KEY_F13": "click", "KEY_F14": "double", "KEY_F15": "long"}
 class EvdevButton:
     """Reads the XIAO (or any keyboard) via evdev and fires Button events."""
 
-    def __init__(self, device_name_contains: str = "XIAO", keymap: dict[str, str] | None = None):
+    def __init__(self, device_name_contains: str = "Nudge", keymap: dict[str, str] | None = None):
         self.match = device_name_contains.lower()
         self.keymap = keymap or KEYMAP
         self._thread: threading.Thread | None = None

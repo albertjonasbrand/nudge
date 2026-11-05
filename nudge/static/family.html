@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nudge — family</title>
+<style>
+  :root { --bg: #f6f4ee; --ink: #1b1b1f; --dim: #6b6f78; --line: #d9d5cc; --accent: #c7761a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.5 system-ui, sans-serif; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 24px 16px 60px; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  .sub { color: var(--dim); margin-bottom: 24px; }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+  textarea { width: 100%; min-height: 420px; font: 15px/1.5 ui-monospace, Menlo, monospace;
+    padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); }
+  button { font: inherit; font-weight: 600; padding: 10px 18px; border-radius: 8px; border: 1px solid var(--line);
+    background: #fff; color: var(--ink); cursor: pointer; margin-right: 8px; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 10px 0; }
+  .msg { color: var(--dim); }
+  .hint { color: var(--dim); font-size: 15px; }
+  label { display: flex; align-items: center; gap: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Nudge</h1>
+  <div class="sub">His world. The more that's here, the better the guesses.</div>
+
+  <h2>Words and names</h2>
+  <p class="hint">One line each under the right heading: <code>- { word: "Eliana", note: "granddaughter" }</code>.
+     Notes help: "the clinic", "his truck", "neighbor". Words he's used after a nudge collect under <code>confirmed</code> on their own.</p>
+  <textarea id="lex" spellcheck="false"></textarea>
+  <div class="row">
+    <button class="primary" id="save">Save</button>
+    <span class="msg" id="msg"></span>
+  </div>
+
+  <h2>Stall log</h2>
+  <p class="hint">Off by default. When on, each press records what he said, the three guesses, and which one he used. No audio, no full transcript. Useful for his speech therapist.</p>
+  <div class="row">
+    <label><input type="checkbox" id="logon"> Keep the log</label>
+    <a href="/log.csv" download><button>Download CSV</button></a>
+    <button id="wipe">Wipe</button>
+  </div>
+</div>
+<script>
+  const lex = document.getElementById('lex'), msg = document.getElementById('msg');
+  fetch('/lexicon').then(r => r.text()).then(t => lex.value = t);
+  document.getElementById('save').onclick = async () => {
+    const r = await fetch('/lexicon', {method: 'POST', body: lex.value});
+    msg.textContent = r.ok ? 'Saved. He\'ll get the new words on the next press.' : 'Couldn\'t save: ' + await r.text();
+  };
+  document.getElementById('logon').onchange = e => fetch('/log/enable', {method: 'POST', body: JSON.stringify({enabled: e.target.checked})});
+  document.getElementById('wipe').onclick = () => { if (confirm('Delete the whole log?')) fetch('/log/wipe', {method: 'POST'}); };
+</script>
+</body>
+</html>

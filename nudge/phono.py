@@ -124,8 +124,24 @@ def sound_alikes(word: str, n: int = 6) -> list[str]:
     return out
 
 
-def hints_for(tail: str, per_word: int = 8, max_words: int = 3) -> str:
-    """One line per content word in the tail: 'goat: coat, boat, vote, note, wrote'."""
+_TRAIL = set("""the a an my your his her our their to of for at in on with and or uh um
+hmm er like so that this these those it its some any thing things one""".split())
+
+
+def looks_like_swap(tail: str) -> bool:
+    """True when he finished a phrase with a real word (maybe the wrong one),
+    False when he trailed off on 'the, uh, the' (that's anomia; hints only distract)."""
+    words = _WORD.findall(tail.lower())
+    if not words:
+        return False
+    return words[-1] not in _TRAIL and len(words[-1]) >= 3
+
+
+def hints_for(tail: str, per_word: int = 8, max_words: int = 4) -> str:
+    """One line per content word in the tail: 'goat: coat, boat, vote, note, wrote'.
+    Empty when the tail reads as a trail-off rather than a finished phrase."""
+    if not looks_like_swap(tail):
+        return ""
     words = [w for w in _WORD.findall(tail.lower()) if w not in STOP and len(w) >= 3]
     seen: list[str] = []
     for w in reversed(words):           # the stall is usually at the end

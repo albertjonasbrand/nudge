@@ -1,5 +1,5 @@
 model:
-  path: models/qwen2.5-3b-instruct-q4_k_m.gguf
+  path: models/qwen2.5-3b-instruct-q4_k_m.gguf   # jetson_setup.sh swaps in the 7B/8B if it fits
   n_ctx: 4096
   n_gpu_layers: -1          # all layers on GPU on the Jetson; ignored on CPU
   n_threads: 6
@@ -8,9 +8,10 @@ model:
   temperature: 0.2
 
 whisper:
-  model: small.en
+  model: small.en           # models/ggml-small.en.bin; try medium.en if his voice needs it
   chunk_seconds: 1.0
   language: en
+  capture_device: null      # null = default mic; `whisper-stream -c -1` lists devices
 
 ring:
   seconds: 60
@@ -21,9 +22,11 @@ tts:
   gap_ms: 350               # pause between the three words
 
 button:
-  gpio_pin: 17
-  ble_name: "Flic"
-  double_click_ms: 400
+  device_name: Nudge        # substring of the evdev device name (firmware reports "XIAO Nudge Button")
+  double_click_ms: 400      # handled in the XIAO firmware
+
+ui:
+  port: 8765
 
 log:
   enabled: false

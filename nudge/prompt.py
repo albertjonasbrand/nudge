@@ -69,7 +69,7 @@ He said right before pressing the button:
 Answer:"""
 
 HINTS = """
-Words that SOUND LIKE what he said (if he swapped a sound, the real word is probably here):
+If one of his words sounds wrong for the sentence, he may have swapped a sound. Sound-alikes:
 {lines}
 """
 
