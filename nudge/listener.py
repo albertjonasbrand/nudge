@@ -32,8 +32,10 @@ _ANSI = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 class WhisperStreamListener:
     def __init__(self, ring: RingBuffer, model_path: str, binary: str = "whisper-stream",
                  step_ms: int = 1000, length_ms: int = 6000, keep_ms: int = 300,
-                 capture_device: int | None = None, threads: int = 4, language: str = "en"):
+                 capture_device: int | None = None, threads: int = 4, language: str = "en",
+                 on_text=None):
         self.ring = ring
+        self.on_text = on_text
         self.model_path = model_path
         self.binary = shutil.which(binary) or binary
         self.step_ms = step_ms
@@ -80,6 +82,11 @@ class WhisperStreamListener:
             self.ring.push(text)
             self.last_text_at = time.monotonic()
             log.debug("heard: %s", text)
+            if self.on_text:
+                try:
+                    self.on_text(text)
+                except Exception:       # never let a UI hiccup kill the pump
+                    log.exception("on_text failed")
         rc = self._proc.poll()
         if not self._stop.is_set():
             log.error("whisper-stream exited (rc=%s); nothing is being heard", rc)
@@ -98,8 +105,9 @@ class WhisperStreamListener:
 class TypedListener:
     """Dev stand-in: type lines at the terminal, they go into the ring buffer."""
 
-    def __init__(self, ring: RingBuffer):
+    def __init__(self, ring: RingBuffer, on_text=None):
         self.ring = ring
+        self.on_text = on_text
         self._thread: threading.Thread | None = None
         self._stop = threading.Event()
         self.last_text_at: float = 0.0
@@ -118,6 +126,8 @@ class TypedListener:
             if line.strip():
                 self.ring.push(line)
                 self.last_text_at = time.monotonic()
+                if self.on_text:
+                    self.on_text(line)
             else:
                 from .button import Button
                 Button.fire("click")

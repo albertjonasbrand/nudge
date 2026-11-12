@@ -45,7 +45,7 @@ class Nudge:
             from .listener import TypedListener
             from .speak import PrintSpeaker
             from .resolver import LlamaBackend
-            self.listener = TypedListener(self.ring)
+            self.listener = TypedListener(self.ring, on_text=self.heard_after_nudge)
             self.speaker = PrintSpeaker()
             backend = LlamaBackend(cfg.model.path, n_ctx=cfg.model.n_ctx or 4096,
                                    n_gpu_layers=cfg.model.n_gpu_layers if cfg.model.n_gpu_layers is not None else -1,
@@ -57,7 +57,7 @@ class Nudge:
             from .button import EvdevButton
             from .resolver import LlamaBackend
             self.listener = WhisperStreamListener(
-                self.ring, model_path=str(config.ROOT / "models" / f"ggml-{cfg.whisper.model or 'small.en'}.bin"),
+                self.ring, on_text=self.heard_after_nudge, model_path=str(config.ROOT / "models" / f"ggml-{cfg.whisper.model or 'small.en'}.bin"),
                 step_ms=int((cfg.whisper.chunk_seconds or 1.0) * 1000),
                 capture_device=cfg.whisper.capture_device, language=cfg.whisper.language or "en")
             self.speaker = Speaker(voice=cfg.tts.voice or "en_US-lessac-medium", gap_ms=cfg.tts.gap_ms or 350,
@@ -97,6 +97,29 @@ class Nudge:
         elif event == "long":
             self.repeat()
 
+    # the words stay up until he picks one (tap or says it), then clear after a beat;
+    # with no pick they clear on their own so the next press starts fresh
+    CLEAR_AFTER_PICK_S = 2.5
+    CLEAR_AFTER_IDLE_S = 30.0
+
+    def _schedule_clear(self, seconds: float) -> None:
+        t = getattr(self, "_clear_timer", None)
+        if t:
+            t.cancel()
+        self._clear_timer = threading.Timer(seconds, self.clear)
+        self._clear_timer.daemon = True
+        self._clear_timer.start()
+
+    def clear(self) -> None:
+        """Back to the idle screen; the next press is a fresh stall."""
+        self.current = None
+        self.seen = []
+        self.more_count = 0
+        if self.ui:
+            self.ui.show_words([], idle=True)
+        else:
+            print("[ idle ]")
+
     def nudge(self, more: bool) -> None:
         if not self._busy.acquire(blocking=False):
             return                                  # already resolving; ignore the bounce
@@ -125,8 +148,10 @@ class Nudge:
             self._show(result.words)
             if result.words:
                 self.speaker.say_words(result.words)
+                self._schedule_clear(self.CLEAR_AFTER_IDLE_S)
             else:
                 self.speaker.say("say a little more")
+                self._schedule_clear(8)
             self._set_status("listening")
         finally:
             self._busy.release()
@@ -146,6 +171,7 @@ class Nudge:
         self.lexicon.confirm(word)
         self.resolver.refresh_lexicon()
         self._set_status("listening")
+        self._schedule_clear(self.CLEAR_AFTER_PICK_S)
 
     def heard_after_nudge(self, text: str) -> None:
         """Called by the listener when he says one of the candidates right after a nudge."""
@@ -154,9 +180,13 @@ class Nudge:
         said = {w.strip(".,!?").lower() for w in text.split()}
         for w in self.current.words:
             if w.lower() in said:
+                log.info("he said %r", w)
                 self.stall_log.mark_used(w)
                 self.lexicon.confirm(w)
                 self.resolver.refresh_lexicon()
+                if self.ui:
+                    self.ui.chosen(w)
+                self._schedule_clear(self.CLEAR_AFTER_PICK_S)
                 break
 
     # ---- ui --------------------------------------------------------------

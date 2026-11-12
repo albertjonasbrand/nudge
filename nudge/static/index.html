@@ -71,13 +71,16 @@
 
   const LABEL = {starting: 'starting up', listening: 'listening', thinking: 'thinking'};
 
-  function showWords(words, moreCount) {
+  function showWords(words, moreCount, idle) {
     cards.forEach((c, i) => {
       const w = words[i];
       c.textContent = w || '';
       c.className = 'card' + (w ? (i === 0 ? ' first' : '') + (w.length > 10 ? ' long' : '') : ' empty');
     });
-    if (!words.length) { cards[0].textContent = 'say a little more, then press again'; cards[0].className = 'card empty'; }
+    if (!words.length) {
+      cards[0].textContent = idle ? "press the button when you're stuck" : 'say a little more, then press again';
+      cards[0].className = 'card empty';
+    }
     more.disabled = !words.length;
     more.textContent = moreCount ? `more (${moreCount + 1})` : 'more';
   }
@@ -107,7 +110,8 @@
     es.onmessage = e => {
       const m = JSON.parse(e.data);
       if (m.type === 'state') { setStatus(m.status); if (m.words && m.words.length) showWords(m.words, m.more); }
-      if (m.type === 'words') showWords(m.words, m.more);
+      if (m.type === 'words') showWords(m.words, m.more, m.idle);
+      if (m.type === 'chosen') cards.forEach(c => c.classList.toggle('chosen', c.textContent === m.word));
       if (m.type === 'status') setStatus(m.status);
     };
     es.onerror = () => { es.close(); setStatus('starting'); setTimeout(connect, 1500); };

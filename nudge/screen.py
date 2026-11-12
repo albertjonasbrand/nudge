@@ -32,10 +32,13 @@ class ScreenServer:
 
     # ---- what the service calls ------------------------------------------
 
-    def show_words(self, words: list[str]) -> None:
+    def show_words(self, words: list[str], idle: bool = False) -> None:
         self._state["words"] = words
         self._state["more"] = self.app.more_count
-        self._broadcast({"type": "words", "words": words, "more": self.app.more_count})
+        self._broadcast({"type": "words", "words": words, "more": self.app.more_count, "idle": idle})
+
+    def chosen(self, word: str) -> None:
+        self._broadcast({"type": "chosen", "word": word})
 
     def set_status(self, status: str) -> None:
         self._state["status"] = status
