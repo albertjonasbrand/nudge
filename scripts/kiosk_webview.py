@@ -20,6 +20,12 @@ URL = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8765/"
 def main() -> None:
     win = Gtk.Window(title="Nudge")
     win.set_decorated(False)
+    # no window manager under xinit, so fullscreen() alone does nothing: size it ourselves
+    scr = Gdk.Screen.get_default()
+    w, h = scr.get_width(), scr.get_height()
+    win.set_default_size(w, h)
+    win.set_size_request(w, h)
+    win.move(0, 0)
     win.fullscreen()
     win.connect("destroy", Gtk.main_quit)
 
