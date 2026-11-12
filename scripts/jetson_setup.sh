@@ -31,7 +31,7 @@ say "apt packages"
 sudo apt-get update -qq
 sudo apt-get install -y -qq git build-essential cmake python3-pip python3-venv python3-dev \
   libsdl2-dev alsa-utils libasound2-dev portaudio19-dev \
-  chromium-browser xserver-xorg xinit openbox unclutter upower \
+  xserver-xorg xinit openbox unclutter upower python3-gi gir1.2-gtk-3.0 gir1.2-webkit2-4.0 \
   libevdev-dev curl jq >/dev/null
 
 say "python deps"
@@ -126,13 +126,17 @@ After=nudge.service
 Type=simple
 User=$USER
 Environment=HOME=$HOME
-ExecStart=/usr/bin/xinit $ROOT/scripts/kiosk.sh -- :0 -nocursor
+ExecStart=/usr/bin/xinit $ROOT/scripts/kiosk.sh -- :0 vt7 -nocursor
 Restart=always
 RestartSec=3
 
 [Install]
 WantedBy=multi-user.target
 EOF
+  # the kiosk's X server needs to own the display: no GDM, and X may start from a service
+  sudo systemctl disable --now gdm3 gdm 2>/dev/null || true
+  printf 'allowed_users=anybody\nneeds_root_rights=yes\n' | sudo tee /etc/X11/Xwrapper.config >/dev/null
+  sudo usermod -aG video,tty "$USER" || true
   sudo systemctl daemon-reload
   sudo systemctl enable nudge.service nudge-kiosk.service
   sudo systemctl set-default multi-user.target   # no desktop; the kiosk is the UI
