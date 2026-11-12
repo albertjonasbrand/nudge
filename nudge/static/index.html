@@ -87,7 +87,8 @@
   }
 
   cards.forEach(c => c.addEventListener('click', () => {
-    if (c.classList.contains('empty')) return;
+    // an empty top card is a press: same as the button (fallback if the button fails)
+    if (c.classList.contains('empty')) { if (c === cards[0]) post('/click'); return; }
     post('/tap', {index: +c.dataset.i});
   }));
   more.addEventListener('click', () => post('/more'));
