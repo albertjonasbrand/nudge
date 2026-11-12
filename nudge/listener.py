@@ -11,6 +11,7 @@ hand for testing.
 from __future__ import annotations
 
 import logging
+import os
 import re
 import shutil
 import subprocess
@@ -25,6 +26,7 @@ log = logging.getLogger(__name__)
 # or with --no-timestamps just the text; strip anything in brackets to be safe.
 _BRACKETS = re.compile(r"\[[^\]]*\]")
 _NOISE = re.compile(r"\((?:[^)]*)\)|\*[^*]*\*")   # "(silence)", "*music*"
+_ANSI = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 
 
 class WhisperStreamListener:
@@ -46,10 +48,11 @@ class WhisperStreamListener:
         self.last_text_at: float = 0.0
 
     def _cmd(self) -> list[str]:
+        # no --no-timestamps: current whisper-stream doesn't have it; _pump strips the brackets
         cmd = [self.binary, "-m", self.model_path,
                "--step", str(self.step_ms), "--length", str(self.length_ms),
                "--keep", str(self.keep_ms), "-t", str(self.threads),
-               "-l", self.language, "--no-timestamps"]
+               "-l", self.language]
         if self.capture_device is not None:
             cmd += ["-c", str(self.capture_device)]
         return cmd
@@ -57,7 +60,8 @@ class WhisperStreamListener:
     def start(self) -> None:
         self._stop.clear()
         self._proc = subprocess.Popen(self._cmd(), stdout=subprocess.PIPE,
-                                      stderr=subprocess.DEVNULL, text=True, bufsize=1)
+                                      stderr=subprocess.DEVNULL, text=True, bufsize=1,
+                                      env={**os.environ, "SDL_AUDIODRIVER": os.environ.get("SDL_AUDIODRIVER", "alsa")})
         self._thread = threading.Thread(target=self._pump, daemon=True, name="whisper-pump")
         self._thread.start()
         log.info("whisper-stream started: %s", " ".join(self._cmd()))
@@ -67,11 +71,18 @@ class WhisperStreamListener:
         for line in self._proc.stdout:
             if self._stop.is_set():
                 break
+            # whisper-stream rewrites the current window in place with ESC[2K\r and only
+            # emits a newline when the window is final: keep the last rewrite of each line
+            line = _ANSI.sub("", line).split("\r")[-1]
             text = _NOISE.sub("", _BRACKETS.sub("", line)).strip()
             if not text or text.lower() in ("you", "thank you", "thanks for watching"):
                 continue        # whisper's silence hallucinations
             self.ring.push(text)
             self.last_text_at = time.monotonic()
+            log.debug("heard: %s", text)
+        rc = self._proc.poll()
+        if not self._stop.is_set():
+            log.error("whisper-stream exited (rc=%s); nothing is being heard", rc)
 
     def stop(self) -> None:
         self._stop.set()
