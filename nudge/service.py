@@ -119,6 +119,8 @@ class Nudge:
             self.current = result
             ms = (time.perf_counter() - t0) * 1000
             log.info("stall %r -> %s (%.0f ms, more=%d)", tail[-60:], result.words, ms, self.more_count)
+            if not result.words:
+                log.warning("no words from raw %r (context tail %r)", result.raw[:120], result.context[-200:])
             self.stall_log.record(tail, result.words, ms, self.more_count)
             self._show(result.words)
             if result.words:
