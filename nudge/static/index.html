@@ -29,6 +29,7 @@
   }
   .card:active { background: var(--card-hi); }
   .card.first { color: var(--accent); }
+  .card.chosen { background: var(--accent); color: #141414; }
   .card.empty { color: var(--dim); font-size: 28px; font-weight: 400; }
   .card.long { font-size: 44px; }
 
@@ -89,6 +90,8 @@
   cards.forEach(c => c.addEventListener('click', () => {
     // an empty top card is a press: same as the button (fallback if the button fails)
     if (c.classList.contains('empty')) { if (c === cards[0]) post('/click'); return; }
+    cards.forEach(o => o.classList.remove('chosen'));
+    c.classList.add('chosen');                      // this is the one he meant
     post('/tap', {index: +c.dataset.i});
   }));
   more.addEventListener('click', () => post('/more'));

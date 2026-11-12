@@ -140,6 +140,7 @@ class Nudge:
         if not self.current or index >= len(self.current.words):
             return
         word = self.current.words[index]
+        log.info("tapped %r", word)
         self.speaker.say(word)
         self.stall_log.mark_used(word)
         self.lexicon.confirm(word)
